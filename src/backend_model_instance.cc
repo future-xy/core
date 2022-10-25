@@ -33,7 +33,7 @@
 #endif
 #include "backend_config.h"
 #include "backend_model.h"
-#include "cuda_utils.h"
+// #include "cuda_utils.h"
 #include "metrics.h"
 #include "model_config.pb.h"
 #include "numa_utils.h"
@@ -263,24 +263,24 @@ TritonModelInstance::CreateInstances(
         // We check the usage after loading the instance to better enforcing
         // the limit. If we check before loading, we may create instance
         // that occupies the rest of available memory which against the purpose
-        if (kind == TRITONSERVER_INSTANCEGROUPKIND_GPU) {
-          size_t free, total;
-          double memory_limit;
-          RETURN_IF_ERROR(GetDeviceMemoryInfo(id, &free, &total));
-          RETURN_IF_ERROR(BackendConfigurationModelLoadGpuFraction(
-              backend_cmdline_config_map, id, &memory_limit));
-          const size_t allow = total * memory_limit;
-          const size_t used = total - free;
-          if (used > allow) {
-            return Status(
-                Status::Code::UNAVAILABLE,
-                std::string("can not create model '") + instance_name +
-                    "': memory limit set for " +
-                    TRITONSERVER_InstanceGroupKindString(kind) + " " +
-                    std::to_string(id) +
-                    " has exceeded, model loading is rejected.");
-          }
-        }
+        // if (kind == TRITONSERVER_INSTANCEGROUPKIND_GPU) {
+        //   size_t free, total;
+        //   double memory_limit;
+        //   RETURN_IF_ERROR(GetDeviceMemoryInfo(id, &free, &total));
+        //   RETURN_IF_ERROR(BackendConfigurationModelLoadGpuFraction(
+        //       backend_cmdline_config_map, id, &memory_limit));
+        //   const size_t allow = total * memory_limit;
+        //   const size_t used = total - free;
+        //   if (used > allow) {
+        //     return Status(
+        //         Status::Code::UNAVAILABLE,
+        //         std::string("can not create model '") + instance_name +
+        //             "': memory limit set for " +
+        //             TRITONSERVER_InstanceGroupKindString(kind) + " " +
+        //             std::to_string(id) +
+        //             " has exceeded, model loading is rejected.");
+        //   }
+        // }
       }
     }
   }

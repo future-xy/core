@@ -37,7 +37,7 @@
 
 #include "backend_manager.h"
 #include "constants.h"
-#include "cuda_utils.h"
+// #include "cuda_utils.h"
 #include "model.h"
 #include "model_config.pb.h"
 #include "model_config_utils.h"
@@ -50,7 +50,7 @@
 #include "triton/common/table_printer.h"
 
 #ifdef TRITON_ENABLE_GPU
-#include "cuda_memory_manager.h"
+// #include "cuda_memory_manager.h"
 #endif  // TRITON_ENABLE_GPU
 
 namespace triton { namespace core {
@@ -121,6 +121,9 @@ InferenceServer::Init()
 
   ready_state_ = ServerReadyState::SERVER_INITIALIZING;
 
+  // logging
+  LOG_INFO << "Starting MY server in model store.";
+
   if (model_repository_paths_.empty()) {
     ready_state_ = ServerReadyState::SERVER_FAILED_TO_INITIALIZE;
     return Status(
@@ -167,12 +170,12 @@ InferenceServer::Init()
     return status;
   }
 
-  PinnedMemoryManager::Options options(pinned_memory_pool_size_);
-  status = PinnedMemoryManager::Create(options);
-  if (!status.IsOk()) {
-    ready_state_ = ServerReadyState::SERVER_FAILED_TO_INITIALIZE;
-    return status;
-  }
+  // PinnedMemoryManager::Options options(pinned_memory_pool_size_);
+  // status = PinnedMemoryManager::Create(options);
+  // if (!status.IsOk()) {
+  //   ready_state_ = ServerReadyState::SERVER_FAILED_TO_INITIALIZE;
+  //   return status;
+  // }
 
   if (response_cache_byte_size_ > 0) {
     std::unique_ptr<RequestResponseCache> local_response_cache;
@@ -186,35 +189,37 @@ InferenceServer::Init()
     response_cache_ = std::move(local_response_cache);
   }
 
-
-#ifdef TRITON_ENABLE_GPU
+// #ifdef TRITON_ENABLE_GPU
   // Set the default CUDA memory pool size for GPUs where it is not
   // set explicitly.
-  std::set<int> supported_gpus;
-  if (GetSupportedGPUs(&supported_gpus, min_supported_compute_capability_)
-          .IsOk()) {
-    for (const auto gpu : supported_gpus) {
-      if (cuda_memory_pool_size_.find(gpu) == cuda_memory_pool_size_.end()) {
-        cuda_memory_pool_size_[gpu] = 1 << 26;
-      }
-    }
-  }
+  // std::set<int> supported_gpus;
+  // if (GetSupportedGPUs(&supported_gpus, min_supported_compute_capability_)
+  //         .IsOk()) {
+  //   for (const auto gpu : supported_gpus) {
+  //     if (cuda_memory_pool_size_.find(gpu) == cuda_memory_pool_size_.end()) {
+  //       cuda_memory_pool_size_[gpu] = 1 << 26;
+  //     }
+  //   }
+  // }
 
-  CudaMemoryManager::Options cuda_options(
-      min_supported_compute_capability_, cuda_memory_pool_size_);
-  status = CudaMemoryManager::Create(cuda_options);
-  // If CUDA memory manager can't be created, just log error as the
-  // server can still function properly
-  if (!status.IsOk()) {
-    LOG_ERROR << status.Message();
-  }
-#endif  // TRITON_ENABLE_GPU
+  // CudaMemoryManager::Options cuda_options(
+  //     min_supported_compute_capability_, cuda_memory_pool_size_);
+  // status = CudaMemoryManager::Create(cuda_options);
+  // // If CUDA memory manager can't be created, just log error as the
+  // // server can still function properly
+  // if (!status.IsOk()) {
+  //   LOG_ERROR << status.Message();
+  // }
+// #endif  // TRITON_ENABLE_GPU
 
-  status = EnablePeerAccess(min_supported_compute_capability_);
-  if (!status.IsOk()) {
-    // failed to enable peer access is not critical, just inefficient.
-    LOG_WARNING << status.Message();
-  }
+  // status = EnablePeerAccess(min_supported_compute_capability_);
+  // if (!status.IsOk()) {
+  //   // failed to enable peer access is not critical, just inefficient.
+  //   LOG_WARNING << status.Message();
+  // }
+
+  // sleep for 1 second to allow the server to be ready
+  // log
 
   // Create the model manager for the repository. Unless model control
   // is disabled, all models are eagerly loaded when the manager is created.
@@ -224,6 +229,8 @@ InferenceServer::Init()
   const ModelLifeCycleOptions life_cycle_options(
       min_supported_compute_capability_, backend_cmdline_config_map_,
       host_policy_map_, model_load_thread_count_);
+  LOG_INFO << "MY server is ready.";
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   status = ModelRepositoryManager::Create(
       this, version_, model_repository_paths_, startup_models_,
       strict_model_config_, polling_enabled, model_control_enabled,

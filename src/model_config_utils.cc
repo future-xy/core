@@ -42,7 +42,7 @@
 #include "triton/common/triton_json.h"
 
 #ifdef TRITON_ENABLE_GPU
-#include <cuda_runtime_api.h>
+// #include <cuda_runtime_api.h>
 #endif  // TRITON_ENABLE_GPU
 
 namespace triton { namespace core {
@@ -735,13 +735,15 @@ NormalizeModelConfig(
     }
 
     // Creates a set of supported GPU device ids
-    std::set<int> supported_gpus;
+    std::set<int> supported_gpus={0};
 #ifdef TRITON_ENABLE_GPU
+    // Log
+    LOG_VERBOSE(1) << "Checking GPU device(s) for model " << config->name();
     // Get the total number of GPUs from the runtime library.
-    Status status = GetSupportedGPUs(&supported_gpus, min_compute_capability);
-    if (!status.IsOk()) {
-      return status;
-    }
+    // Status status = GetSupportedGPUs(&supported_gpus, min_compute_capability);
+    // if (!status.IsOk()) {
+    //   return status;
+    // }
 
 #endif  // TRITON_ENABLE_GPU
 
@@ -763,6 +765,10 @@ NormalizeModelConfig(
           group.set_kind(inference::ModelInstanceGroup::KIND_CPU);
         } else {
           for (const int32_t gid : group.gpus()) {
+            LOG_VERBOSE(1) << "GPU " << gid << " is "
+                           << ((supported_gpus.find(gid) != supported_gpus.end())
+                                   ? "available"
+                                   : "not available");
             if (supported_gpus.find(gid) == supported_gpus.end()) {
               group.set_kind(inference::ModelInstanceGroup::KIND_CPU);
               break;
@@ -784,6 +790,8 @@ NormalizeModelConfig(
       if ((group.kind() == inference::ModelInstanceGroup::KIND_GPU) &&
           (group.gpus().size() == 0)) {
         for (auto d : supported_gpus) {
+          LOG_VERBOSE(1) << "Adding GPU device " << d << " for model "
+                         << config->name();
           group.add_gpus(d);
         }
       }
@@ -1374,15 +1382,22 @@ ValidateModelConfig(
     // doesn't specify a non-existent GPU. Make sure non-KIND_GPU does
     // not specify any GPUs.
 #ifdef TRITON_ENABLE_GPU
-    std::set<int> supported_gpus;
-    Status status = GetSupportedGPUs(&supported_gpus, min_compute_capability);
-    if (!status.IsOk()) {
-      return status;
-    }
+    std::set<int> supported_gpus={0};
+    LOG_VERBOSE(1) << "Checking GPU device(s) for model " << config.name();
+    // Status status = GetSupportedGPUs(&supported_gpus, min_compute_capability);
+    // if (!status.IsOk()) {
+    //   return status;
+    // }
 #endif  // TRITON_ENABLE_GPU
 
     for (const auto& group : config.instance_group()) {
+      LOG_VERBOSE(1) << "Checking instance group " << group.name()
+                     << " for model " << config.name();
       if (group.kind() == inference::ModelInstanceGroup::KIND_MODEL) {
+        // log
+        LOG_VERBOSE(1) << "Instance group " << group.name()
+                       << " for model " << config.name()
+                       << " is a KIND_MODEL group";
         if (group.gpus().size() > 0) {
           return Status(
               Status::Code::INVALID_ARG,

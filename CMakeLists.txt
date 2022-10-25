@@ -149,7 +149,9 @@ if(NOT TRITON_CORE_HEADERS_ONLY)
 
   # Metrics
   option(TRITON_ENABLE_METRICS "Include metrics support in server" ON)
+  message(STATUS "TRITON_ENABLE_METRICS: ${TRITON_ENABLE_METRICS}")
   option(TRITON_ENABLE_METRICS_GPU "Include GPU metrics support in server" ON)
+  message(STATUS "TRITON_ENABLE_METRICS_GPU: ${TRITON_ENABLE_METRICS_GPU}")
 
   # Cloud storage
   option(TRITON_ENABLE_GCS "Include GCS Filesystem support in server" OFF)
