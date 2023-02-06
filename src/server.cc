@@ -230,7 +230,7 @@ InferenceServer::Init()
       min_supported_compute_capability_, backend_cmdline_config_map_,
       host_policy_map_, model_load_thread_count_);
   LOG_INFO << "MY server is ready.";
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  // std::this_thread::sleep_for(std::chrono::seconds(1));
   status = ModelRepositoryManager::Create(
       this, version_, model_repository_paths_, startup_models_,
       strict_model_config_, polling_enabled, model_control_enabled,
