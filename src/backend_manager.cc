@@ -149,6 +149,7 @@ TritonBackend::LoadBackendLibrary()
     std::unique_ptr<SharedLibrary> slib;
     RETURN_IF_ERROR(SharedLibrary::Acquire(&slib));
 
+    // Warm-up expires after this call.
     RETURN_IF_ERROR(slib->OpenLibraryHandle(libpath_, &dlhandle_));
 
     // Backend initialize and finalize functions, optional

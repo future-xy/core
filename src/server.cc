@@ -145,6 +145,17 @@ InferenceServer::Init()
     return status;
   }
 
+  {
+    // warm up the backend manager
+    std::string backend_name = "pytorch";
+    std::string dir = "/opt/tritonserver/backends/pytorch";
+    std::string lib = "/opt/tritonserver/backends/pytorch/libtriton_pytorch.so";
+    triton::common::BackendCmdlineConfig config;
+    std::shared_ptr<TritonBackend> backend;
+    status = backend_manager_->CreateBackend(backend_name, dir, lib, config,
+                                             &backend);
+  }
+
   if (buffer_manager_thread_count_ > 0) {
     status = CommonErrorToStatus(triton::common::AsyncWorkQueue::Initialize(
         buffer_manager_thread_count_));
@@ -208,6 +219,13 @@ InferenceServer::Init()
   if (!status.IsOk()) {
     LOG_ERROR << status.Message();
   }
+
+  // Initialize CUDA context, std::unique_ptr<ContextManager> context_manager_;
+  context_manager_ = std::unique_ptr<ContextManager>(new ContextManager());
+  int ret = context_manager_->Init();
+  if (ret != 0) {
+    LOG_ERROR << "Failed to initialize CUDA context manager";
+  }
 #endif  // TRITON_ENABLE_GPU
 
   status = EnablePeerAccess(min_supported_compute_capability_);
@@ -241,6 +259,12 @@ InferenceServer::Init()
   } else {
     ready_state_ = ServerReadyState::SERVER_READY;
     PrintBackendAndModelSummary();
+  }
+
+  // register to the scheduler
+  ret = system("python3 /root/register.py");
+  if (ret != 0) {
+    LOG_ERROR << "Failed to register";
   }
 
   return status;

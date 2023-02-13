@@ -42,6 +42,10 @@
 #include "status.h"
 #include "triton/common/model_config.h"
 
+#ifdef TRITON_ENABLE_GPU
+#include "context_manager.h"
+#endif  // TRITON_ENABLE_GPU
+
 namespace triton { namespace core {
 
 class Model;
@@ -321,6 +325,9 @@ class InferenceServer {
   std::unique_ptr<ModelRepositoryManager> model_repository_manager_;
   std::shared_ptr<TritonBackendManager> backend_manager_;
   std::shared_ptr<RequestResponseCache> response_cache_;
+  #ifdef TRITON_ENABLE_GPU
+  std::unique_ptr<ContextManager> context_manager_;
+  #endif  // TRITON_ENABLE_GPU
 };
 
 }}  // namespace triton::core

@@ -43,6 +43,9 @@
 #include "triton/common/nvtx.h"
 #include "tritonserver_apis.h"
 
+#include <chrono>
+#include <thread>
+
 // For unknown reason, windows will not export the TRITONBACKEND_*
 // functions declared with dllexport in tritonbackend.h. To get those
 // functions exported it is (also?) necessary to mark the definitions
@@ -329,6 +332,8 @@ TritonModelInstance::CreateInstance(
     RETURN_IF_ERROR(SharedLibrary::Acquire(&slib));
     RETURN_IF_ERROR(slib->SetLibraryDirectory(model->Backend()->Directory()));
 
+    // Here is the real call to the backend to initialize the instance, i.e., 
+    // load the model checkpoint.
     TRITONSERVER_Error* err =
         model->Backend()->ModelInstanceInitFn()(triton_instance);
 
