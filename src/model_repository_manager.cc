@@ -339,8 +339,8 @@ ModelRepositoryManager::Create(
           std::move(life_cycle)));
   *model_repository_manager = std::move(local_manager);
 
-/* 
- * we do not load any model on startup
+// /* 
+//  * we do not load any model on startup
  
   // Support loading all models on startup in explicit model control mode with
   // special startup_model name "*". This does not imply support for pattern
@@ -398,7 +398,7 @@ ModelRepositoryManager::Create(
       }
     }
   }
-*/
+// */
   return Status::Success;
 }
 
