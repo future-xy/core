@@ -228,6 +228,7 @@ TritonModelInstance::CreateInstances(
                                           : group.host_policy(),
               TRITONSERVER_INSTANCEGROUPKIND_GPU, device_id,
               &group.rate_limiter());
+          break;
         }
       } else if (group.kind() == inference::ModelInstanceGroup::KIND_MODEL) {
         instance_setting.emplace_back(
