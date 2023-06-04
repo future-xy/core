@@ -150,6 +150,9 @@ InferenceServer::Init()
     std::string backend_name = "pytorch";
     std::string dir = "/opt/tritonserver/backends/pytorch";
     std::string lib = "/opt/tritonserver/backends/pytorch/libtriton_pytorch.so";
+    // std::string backend_name = "python";
+    // std::string dir = "/opt/tritonserver/backends/python";
+    // std::string lib = "/opt/tritonserver/backends/python/libtriton_python.so";
     triton::common::BackendCmdlineConfig config;
     std::shared_ptr<TritonBackend> backend;
     status = backend_manager_->CreateBackend(backend_name, dir, lib, config,
